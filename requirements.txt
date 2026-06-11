@@ -1,0 +1,12 @@
+scanpy
+anndata
+scvi-tools
+scikit-learn
+numpy
+pandas
+matplotlib
+seaborn
+anthropic
+openai
+pyyaml
+pybiomart
