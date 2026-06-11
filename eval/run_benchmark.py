@@ -1,7 +1,7 @@
 """Run the Phase 1 benchmark: embed each model on each dataset and score tasks.
 
 Usage:
-    python run_benchmark.py --dataset pbmc --models pca scvi
+    python run_benchmark.py --dataset pbmc --models pca geneformer
 """
 
 import argparse
@@ -11,12 +11,11 @@ from pathlib import Path
 from data.gene_id_mapping import symbols_to_ensembl
 from data.load_dataset import load
 from eval.tasks import batch_integration_asw, cell_type_classification
-from models.baselines import PCABaseline, ScVIBaseline
+from models.baselines import PCABaseline
 from models.foundation import GeneformerModel
 
 MODEL_REGISTRY = {
     "pca": PCABaseline,
-    "scvi": ScVIBaseline,
     "geneformer": lambda: GeneformerModel(model_dir="models/checkpoints/geneformer-V2-104M"),
 }
 

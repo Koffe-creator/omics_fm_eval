@@ -1,14 +1,4 @@
-"""Wrappers for single-cell foundation models.
-
-Each wrapper is a thin adapter around the model's published embedding API.
-Install the corresponding package before use (not in requirements.txt due
-to heavy/conflicting dependencies):
-
-  - scGPT:       pip install scgpt
-  - Geneformer:  pip install geneformer
-  - scFoundation: see https://github.com/biomap-research/scFoundation
-  - UCE:         see https://github.com/snap-stanford/UCE
-"""
+"""Wrappers for single-cell foundation models."""
 
 import numpy as np
 from anndata import AnnData
@@ -16,42 +6,14 @@ from anndata import AnnData
 from .base import EmbeddingModel
 
 
-class ScGPTModel(EmbeddingModel):
-    """Wrapper around scGPT's pretrained whole-human checkpoint.
-
-    Download the checkpoint (e.g. "whole-human") from the scGPT repo and point
-    `model_dir` at the folder containing `args.json`, `vocab.json`, and `best_model.pt`.
-
-    Requires `adata.var_names` to be gene symbols matching scGPT's vocab.
-    """
-
-    name = "scgpt"
-
-    def __init__(self, model_dir: str, gene_col: str = "index", batch_size: int = 64):
-        self.model_dir = model_dir
-        self.gene_col = gene_col
-        self.batch_size = batch_size
-
-    def embed(self, adata: AnnData) -> np.ndarray:
-        from scgpt.tasks import embed_data
-
-        embedded = embed_data(
-            adata,
-            model_dir=self.model_dir,
-            gene_col=self.gene_col,
-            batch_size=self.batch_size,
-        )
-        return embedded.obsm["X_scGPT"]
-
-
 class GeneformerModel(EmbeddingModel):
     """Wrapper around Geneformer (HuggingFace transformers, runs on CPU).
 
     `model_dir` should point to a downloaded Geneformer checkpoint, e.g.
-    `Geneformer/gf-12L-30M-i2048` from https://huggingface.co/ctheodoris/Geneformer
+    `Geneformer-V2-104M` from https://huggingface.co/ctheodoris/Geneformer
 
     `adata.var_names` must be Ensembl gene IDs (the tokenizer maps gene IDs
-    to tokens via its internal dictionary).
+    to tokens via its internal dictionary) - see `data/gene_id_mapping.py`.
     """
 
     name = "geneformer"
@@ -119,23 +81,3 @@ class GeneformerModel(EmbeddingModel):
                 "embs",
             )
         return embs.values
-
-
-class ScFoundationModel(EmbeddingModel):
-    name = "scfoundation"
-
-    def __init__(self, model_dir: str):
-        self.model_dir = model_dir
-
-    def embed(self, adata: AnnData) -> np.ndarray:
-        raise NotImplementedError("Run scFoundation get_embedding.py pipeline")
-
-
-class UCEModel(EmbeddingModel):
-    name = "uce"
-
-    def __init__(self, model_dir: str):
-        self.model_dir = model_dir
-
-    def embed(self, adata: AnnData) -> np.ndarray:
-        raise NotImplementedError("Run UCE eval.py to produce cell embeddings")
