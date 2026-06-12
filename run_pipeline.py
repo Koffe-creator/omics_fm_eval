@@ -53,7 +53,7 @@ def main():
     parser.add_argument("--dataset", default="pbmc")
     parser.add_argument("--models", nargs="+", default=["pca", "geneformer"],
                         choices=list(MODEL_REGISTRY))
-    parser.add_argument("--cluster-key", default="louvain")
+    parser.add_argument("--cluster-key", default="cell_type")
     parser.add_argument("--llm-model", default="claude-haiku-4-5")
     parser.add_argument("--n-genes", type=int, default=15)
     parser.add_argument("--outdir", default="results")

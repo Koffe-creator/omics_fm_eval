@@ -23,7 +23,7 @@ from llm_judge.marker_genes import top_markers_per_cluster
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="pbmc")
-    parser.add_argument("--cluster-key", default="louvain",
+    parser.add_argument("--cluster-key", default="cell_type",
                         help="obs column holding cluster / ground-truth labels")
     parser.add_argument("--model", default="claude-haiku-4-5")
     parser.add_argument("--n-genes", type=int, default=15)

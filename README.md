@@ -96,12 +96,25 @@ cp .env.example .env
 `.env` is gitignored and must never be committed. Get a key at
 [console.anthropic.com](https://console.anthropic.com/settings/keys).
 
+## Datasets
+
+Pick with `--dataset`:
+
+| Name | Cells | Cell types | Notes |
+|---|---|---|---|
+| `pbmc` | 2638 | 8 (coarse: B, CD4 T, CD8 T, NK, monocytes…) | PBMC 3k, the easy case |
+| `pbmc68k` | 700 | 10 (fine-grained: T reg, naive vs memory T…) | PBMC 68k reduced, harder subtype resolution |
+
+Both standardize their ground-truth labels into `adata.obs["cell_type"]`, so
+the same commands work for either.
+
 ## Running
 
 ### Full pipeline (both phases)
 
 ```bash
-python run_pipeline.py --dataset pbmc --models pca geneformer
+python run_pipeline.py --dataset pbmc    --models pca geneformer
+python run_pipeline.py --dataset pbmc68k --models pca geneformer
 ```
 
 Prints a summary and writes:
@@ -119,15 +132,21 @@ python -m eval.run_benchmark --dataset pbmc --models pca geneformer   # Phase 1 
 python -m llm_judge.run_llm_judge --dataset pbmc                      # Phase 2 only
 ```
 
-## Example results (PBMC 3k)
+## Example results
 
-| Phase | Method | Accuracy |
+| Method | pbmc (coarse, 8 types) | pbmc68k (fine, 10 types) |
 |---|---|---|
-| 1 | PCA (embedding + linear probe) | 0.945 |
-| 1 | Geneformer V2-104M (embedding + linear probe) | 0.778 |
-| 2 | LLM judge (zero-shot from marker genes) | 0.75–0.88 |
+| PCA (embedding + linear probe) | 0.945 | 0.779 |
+| Geneformer V2-104M | 0.778 | — |
+| LLM judge (zero-shot from marker genes) | 0.75–0.88 | 0.500 |
 
-The headline finding: on this dataset a general-purpose LLM, given only gene
-*names*, roughly matches the dedicated transcriptomics foundation model — and
-plain PCA beats both. The LLM's range reflects run-to-run variance on
-biologically ambiguous clusters (see `accuracy_log.txt`).
+Two findings worth a write-up:
+
+1. **On coarse cell types, a general-purpose LLM — given only gene *names* —
+   roughly matches the dedicated foundation model, and plain PCA beats both.**
+2. **Granularity matters enormously.** On fine-grained subtypes (T reg, naive
+   vs. memory T) the LLM collapses to generic categories ("T cell") and accuracy
+   halves. The easy-dataset numbers oversell zero-shot LLM annotation.
+
+The LLM's range reflects run-to-run variance on biologically ambiguous clusters
+(see `accuracy_log.txt`).
